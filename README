@@ -1,4 +1,6 @@
-SpringInterpolator is an interpolater for animations.
-It's "reversed-engineered" from facebook's rebound library.
+#Rebound
 
-For details lookup: http://www.anotherblogger.de/blog/article/9
+SpringInterpolator is an interpolater for animations.
+It's "reversed-engineered" from facebook's [rebound library](https://github.com/facebook/rebound).
+
+For a detailed documentation of my approach lookup [my blog](http://www.anotherblogger.de/blog/article/9).
