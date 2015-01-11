@@ -23,7 +23,7 @@ public class ExampleApplication extends JFrame{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         
-
+		
 		interpolator = new SpringInterpolator();
 		//interpolator.setStiffness(5f);
 		//interpolator.setDampening(0.5f);
@@ -39,7 +39,7 @@ public class ExampleApplication extends JFrame{
         demoButton.setSize(200, 300);
         add(demoButton);
         
-
+		
 		interpolator.addListener(demoChart);
 		interpolator.addListener(demoButton);
     }   
