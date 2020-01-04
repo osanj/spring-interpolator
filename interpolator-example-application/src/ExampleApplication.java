@@ -2,7 +2,7 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 
-import de.anotherblogger.rebuilt.SpringInterpolator;
+import de.osanj.springinterpolator.SpringInterpolator;
 
 
 public class ExampleApplication extends JFrame{

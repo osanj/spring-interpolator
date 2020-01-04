@@ -1,4 +1,4 @@
-package de.anotherblogger.rebuilt;
+package de.osanj.springinterpolator;
 
 import java.util.ArrayList;
 import java.util.List;

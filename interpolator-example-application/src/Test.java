@@ -5,8 +5,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.text.DecimalFormat;
 
-import de.anotherblogger.rebuilt.SpringInterpolator;
-import de.anotherblogger.rebuilt.SpringSystem;
+import de.osanj.springinterpolator.SpringInterpolator;
+import de.osanj.springinterpolator.SpringSystem;
 
 public class Test {
 	

@@ -1,4 +1,4 @@
-package de.anotherblogger.rebuilt;
+package de.osanj.springinterpolator;
 
 /**
  * The Listener to receive the events from an associated {@link SpringInterpolator}.

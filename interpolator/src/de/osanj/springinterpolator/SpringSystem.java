@@ -1,4 +1,4 @@
-package de.anotherblogger.rebuilt;
+package de.osanj.springinterpolator;
 
 /**
  * Representation of a mechanical model (mass, 2x springs, 2x dampers). Uses Runge-Kutta 4 to solve the associated ODE of 2nd order.

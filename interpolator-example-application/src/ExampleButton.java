@@ -6,8 +6,8 @@ import java.awt.event.MouseListener;
 
 import javax.swing.JPanel;
 
-import de.anotherblogger.rebuilt.OnSpringUpdateListener;
-import de.anotherblogger.rebuilt.SpringInterpolator;
+import de.osanj.springinterpolator.OnSpringUpdateListener;
+import de.osanj.springinterpolator.SpringInterpolator;
 
 
 public class ExampleButton extends JPanel implements MouseListener, OnSpringUpdateListener{
