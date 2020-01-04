@@ -12,9 +12,7 @@ import de.osanj.springinterpolator.SpringInterpolator;
 
 public class ExampleButton extends JPanel implements MouseListener, OnSpringUpdateListener{
 	
-	private Color fg1 = Color.orange;
-	private Color fg2 = Color.red;
-	private Color fg = fg1;
+	private Color fg = Color.orange;
 	private Color bg = Color.lightGray;
 	private int squareSize, squareSizeMin, squareSizeMax, squareX, squareY;
 	private SpringInterpolator interpolator;
@@ -22,7 +20,8 @@ public class ExampleButton extends JPanel implements MouseListener, OnSpringUpda
 	
 	public ExampleButton(SpringInterpolator interpolator){
 		this.interpolator = interpolator;
-		
+
+		System.out.println(">>> Click the square to stimulate the system");
 		addMouseListener(this);
 	}
 	
@@ -42,22 +41,18 @@ public class ExampleButton extends JPanel implements MouseListener, OnSpringUpda
 	
 	@Override
 	protected void paintComponent(Graphics g) {
-		//redrawing bg
+		// redrawing bg
 		g.setColor(bg);
 		g.fillRect(0, 0, getWidth(), getHeight());
 		
-		//draw
+		// draw
 		g.setColor(fg);
 		g.fillRect(squareX, squareY, squareSize, squareSize);
 	}
 	
-	
-	
-	
 	@Override
 	public void onSpringUpdate(SpringInterpolator interpolator, float interpolatedValue) {
 		squareSize = squareSizeMin + (int) (interpolatedValue * (squareSizeMax - squareSizeMin));
-		
 		updateCoors();
 		repaint();
 	}
@@ -70,36 +65,29 @@ public class ExampleButton extends JPanel implements MouseListener, OnSpringUpda
 	@Override
 	public void mouseClicked(MouseEvent arg0) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void mouseExited(MouseEvent arg0) {
-		if(interpolator.getFinalPosition())
+		if(interpolator.getFinalPosition()) {
 			interpolator.setFinalPosition(false);
+		}
 	}
 
 	@Override
 	public void mousePressed(MouseEvent arg0) {
 		System.out.println("mousePressed");
-		
-		//fg = fg2;
 		interpolator.setFinalPosition(true);
 	}
 	
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
 		System.out.println("mouseReleased");
-
-		//fg = fg1;
 		interpolator.setFinalPosition(false);
 	}
-	
-
 }

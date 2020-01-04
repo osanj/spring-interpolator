@@ -203,12 +203,7 @@ public class SpringInterpolator {
 		float dest = sys.getU() ? 1 : 0;
 		float diff = Math.abs(dest - x / sys.getXe());
 		
-		if(diff > OBS_TOL){
-			tolerances[tolerancesPos] = false;
-		}else{
-			tolerances[tolerancesPos] = true;
-		}
-		
+		tolerances[tolerancesPos] = diff <= OBS_TOL;
 		tolerancesPos++;
 		
 		if(tolerancesPos >= OBS_COUNT){

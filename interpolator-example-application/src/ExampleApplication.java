@@ -16,7 +16,6 @@ public class ExampleApplication extends JFrame{
     }
 
     private void initUI(){
-    	//basic setup
     	setLayout(null);
         setSize(800, 425);
         setTitle(this.getClass().getName());
@@ -25,8 +24,8 @@ public class ExampleApplication extends JFrame{
         
 		
 		interpolator = new SpringInterpolator();
-		//interpolator.setStiffness(5f);
-		//interpolator.setDampening(0.5f);
+		// interpolator.setStiffness(5f);
+		// interpolator.setDampening(0.5f);
         
 		demoChart = new ExampleChart();
 		demoChart.setBounds(400, 0, 400, 400);
