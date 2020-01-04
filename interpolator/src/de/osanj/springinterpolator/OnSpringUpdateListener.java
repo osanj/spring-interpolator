@@ -2,9 +2,6 @@ package de.osanj.springinterpolator;
 
 /**
  * The Listener to receive the events from an associated {@link SpringInterpolator}.
- * 
- * @version	1.0
- * 
  */
 public interface OnSpringUpdateListener {
 	

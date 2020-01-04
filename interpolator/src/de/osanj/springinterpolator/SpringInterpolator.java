@@ -37,7 +37,7 @@ import java.util.List;
  * <br>
  * <br>
  * For more information and details look up:
- * <b><a href="http://www.anotherblogger.de/blog/article/9">http://www.anotherblogger.de/blog/article/9</a></b>
+ * <a href="https://osanj.github.io/post/spring-dynamics-interpolation/">https://osanj.github.io/post/spring-dynamics-interpolation/</a>
  * <br>
  * <br>
  * <br>
@@ -51,15 +51,15 @@ import java.util.List;
  *	public ButtonAnimator(Button button){
  *		this.button = button;
  *		
- *		//new interpolator with 30fps update-cycle
+ *		// new interpolator with 30fps update-cycle
  *		interpolator = new SpringInterpolator(30);
  *		
- *		//customize curve and duration
+ *		// customize curve and duration
  *		interpolator.setStiffness(5f);
  *		interpolator.setDampening(1f);
- *		interpolator.setApproximateDuration(500);	//500ms
+ *		interpolator.setApproximateDuration(500); // 500ms
  *		
- *		//setting interfaces
+ *		// setting interfaces
  *		button.addOnClickListener(this);
  *		interpolator.addListener(this);
  *	}
@@ -80,27 +80,24 @@ import java.util.List;
  *	} 
  * }
  * </pre>
- * 
- * 
- * @version	1.0
  */
 public class SpringInterpolator {
 	
-	public static final float MAX_D = 10f;             // maximal value for the dampening
-	public static final float MIN_D = 0.1f;            // minimal value for the dampening
-	public static final float MAX_K = 20f;             // maximal value for the stiffness
-	public static final float MIN_K = 0.1f;            // minimal value for the stiffness
-	public static final float MAX_REAL_DUR = 5000;     // maximal value for the real-time-mapping (in ms)
-	public static final float MIN_REAL_DUR = 100;      // minimal value for the real-time-mapping (in ms)
+	public static final float MAX_D = 10f;              // maximal value for the dampening
+	public static final float MIN_D = 0.1f;             // minimal value for the dampening
+	public static final float MAX_K = 20f;              // maximal value for the stiffness
+	public static final float MIN_K = 0.1f;             // minimal value for the stiffness
+	public static final float MAX_REAL_DURATION = 5000; // maximal value for the real-time-mapping (in ms)
+	public static final float MIN_REAL_DURATION = 100;  // minimal value for the real-time-mapping (in ms)
 	
-	private static final float H = 0.02f;               // step-size
-	private static final float SIM_DUR = 5f;            // in s, for transforming from realtime (1000ms) to simulationtime (5s)
-	private float REAL_DUR = 1000f;                     // realtime which the simulation is mapped to
-	private static final float OBS_TOL = 0.01f;         // tolerance for determining if end position is (permanently) reached
-	private static final int OBS_COUNT = (int) (2 / H); // how many values consecutively have to be within the tolerance
+	private static final float H = 0.02f;                // step-size
+	private static final float SIM_DUR = 5f;             // in s, for transforming from realtime (1000ms) to simulationtime (5s)
+	private static final float OBS_TOL = 0.01f;          // tolerance for determining if end position is (permanently) reached
+	private static final int OBS_COUNT = (int) (2 / H);  // how many values consecutively have to be within the tolerance
+	private float duration = 1000f;                      // in ms, realtime which the simulation is mapped to
 	
 	private SpringSystem sys;
-	private boolean steadystate;
+	private boolean steadyState;
 	private boolean[] tolerances;
 	private int tolerancesPos;	
 	
@@ -119,7 +116,6 @@ public class SpringInterpolator {
 	
 	/**
 	 * SpringInterpolator from start position "bottom".
-	 * 
 	 * @param updateRateFps	update-period in FramesPerSecond
 	 */
 	public SpringInterpolator(int updateRateFps) {
@@ -128,7 +124,6 @@ public class SpringInterpolator {
 	
 	/**
 	 * Set both start position and update-rate.
-	 * 
 	 * @param updateRateFps		update-period in FramesPerSecond
 	 * @param currentPosition	starting position of the system
 	 */
@@ -137,7 +132,7 @@ public class SpringInterpolator {
 		
 		sys = new SpringSystem(currentPosition);
 		listeners = new ArrayList<OnSpringUpdateListener>();
-		steadystate = false;
+		steadyState = false;
 		
 		tolerances = new boolean[OBS_COUNT];
 		resetToleranceObservation();
@@ -147,18 +142,16 @@ public class SpringInterpolator {
 		startLooper();
 	}
 	
-	
-	
 	private void onUpdate(long pauseMillis){
 		// physical model/setup is "moving" between 1 to 6 seconds
 		// a usual duration for an animation is 1000ms
 		// -> mapping curve from 5s to 1000ms (standard)
 		
-		if(!steadystate){
+		if(!steadyState){
 			
 			// pauseMillis is the time since the last computation
 			// mapping from real-time to simulation-time, e.g. 16ms (realtime) -> 0.08s (simtime for spring system)
-			float mappedTimeStep = pauseMillis / REAL_DUR * SIM_DUR;
+			float mappedTimeStep = pauseMillis / duration * SIM_DUR;
 			
 			
 			synchronized(sys){
@@ -178,152 +171,134 @@ public class SpringInterpolator {
 				
 			}else{
 				// stop updates if steady-state is reached
-				steadystate = true;
+				steadyState = true;
 				dispatchFinalUpdate();
 			}
 		}
 	}
 	
-	
 	private void startLooper(){
-		// starting with a clean slate
 		resetToleranceObservation();
 		
-		// setting up Looping-Architecture and starting it
 		looper = new UpdateLoop(this, updateRateFps);
 		looperThread = new Thread(looper);
 		looperThread.start();
 	}
-			
-	
+
 	private void dispatchUpdate(float interpolatedValue){
 		for(OnSpringUpdateListener listener : listeners)
 			listener.onSpringUpdate(this, interpolatedValue);
 	}
 	
-	
 	private void dispatchFinalUpdate(){
 		boolean finalPosition = sys.getU();
 		float finalInterpolatedValue = getCurrentInterpolatedValue();
 		
-		for(OnSpringUpdateListener listener : listeners)
+		for(OnSpringUpdateListener listener : listeners){
 			listener.onSpringFinalPosition(this, finalInterpolatedValue, finalPosition);
+		}
 	}
-	
 	
 	private void updateToleranceObservation(float x){
 		float dest = sys.getU() ? 1 : 0;
 		float diff = Math.abs(dest - x / sys.getXe());
 		
-		if(diff > OBS_TOL)
+		if(diff > OBS_TOL){
 			tolerances[tolerancesPos] = false;
-		else
+		}else{
 			tolerances[tolerancesPos] = true;
+		}
 		
 		tolerancesPos++;
 		
-		if(tolerancesPos >= OBS_COUNT)
+		if(tolerancesPos >= OBS_COUNT){
 			tolerancesPos = 0;
+		}
 	}
-	
 	
 	private void resetToleranceObservation(){
-		for(int i = 0 ; i < OBS_COUNT; i++)
+		for(int i = 0 ; i < OBS_COUNT; i++){
 			tolerances[i] = false;
+		}
 	}
-	
 	
 	private boolean isWithinTolerance(){
 		for(int i = 0 ; i < OBS_COUNT; i++){
-			if(!tolerances[i])
+			if(!tolerances[i]){
 				return false;
+			}
 		}
 		
 		return true;
 	}
 	
-	
-
 	public void addListener(OnSpringUpdateListener listener){
 		listeners.add(listener);
 	}
-	
 	
 	public void removeListener(OnSpringUpdateListener listener){
 		listeners.remove(listener);
 	}
 	
-	
 	public void removeAllListeners(){
-		for(int i = 0, len = listeners.size(); i < len; i++)
+		for(int i = 0, len = listeners.size(); i < len; i++) {
 			listeners.remove(i);
+		}
 	}
 
-	
-	
-	
 	/**
 	 * Current normed value of the model (usually something between/around 0 and 1).
-	 * 
 	 * @return current value of the interpolation
 	 */
 	public float getCurrentInterpolatedValue(){
-		if(!reachedFinalPositionPermanently())
-			return sys.getX() / sys.getXe(); //normalize x
+		if(!reachedFinalPositionPermanently()){
+			return sys.getX() / sys.getXe(); // normalize x
 		
-		else{
-			if(sys.getU())
+		}else{
+			if(sys.getU()){
 				return 1;
-			else
+			}else{
 				return 0;
+			}
 		}
 	}
-	
 	
 	/**
 	 * If the velocity and deviation is really small, it is determined that the final position is reached
 	 * permanently. That means there will no be further motion/updates without stimulation (idle state).
 	 * This returns true after {@link OnSpringUpdateListener#onSpringFinalPosition} has been fired.
 	 * <br>
-	 * <br>
-	 * <u>Note:</u> Of course it can be stimulated again. For example by using
+	 * <b>Note:</b> Of course it can be stimulated again. For example by using
 	 * {@link #setFinalPosition(boolean) setFinalPosition} and the inverse current position
 	 * as argument ({@link #getFinalPosition() !getFinalPosition}).
 	 * 
 	 * @return true if the model is idle
 	 */
 	public boolean reachedFinalPositionPermanently(){
-		return steadystate;
+		return steadyState;
 	}
-	
 	
 	/**
 	 * Currently set final position.
-	 * 
 	 * <br>
-	 * <br>
-	 * <u>Note:</u> This does not indicate, that there will be no further motion/updates.
+	 * <b>Note:</b> This does not indicate, that there will be no further motion/updates.
 	 * Use {@link #reachedFinalPositionPermanently() reachedFinalPositionPermanently}
 	 * to determine if motion can still be expected
-	 * 
 	 * @return current final position (false ~ "bottom", true ~ "top")
 	 */
 	public boolean getFinalPosition(){
 		return sys.getU();
 	}
 	
-	
 	/**
 	 * Sets final position. This causes the system to oscillate <b>if</b> it has not (permanently) reached the given
 	 * end position yet (idle state).
 	 * That can be checked with {@link #reachedFinalPositionPermanently() reachedFinalPositionPermanently}.
-	 * 
 	 * @param top	final position (false ~ "bottom", true ~ "top")
 	 */
 	public void setFinalPosition(boolean top){
 		setFinalPosition(top, false);
 	}
-	
 	
 	/**
 	 * Sets final position. This causes the system to oscillate <b>if</b> it has not (permanently) reached the given
@@ -332,7 +307,6 @@ public class SpringInterpolator {
 	 * <br>
 	 * With <code>skipMotion</code> idle state is instantly reached which means there will be no updates
 	 * and {@link #reachedFinalPositionPermanently() reachedFinalPositionPermanently} returns <code>true</code>.
-	 * 
 	 * @param top			final position (false ~ "bottom", true ~ "top")
 	 * @param skipMotion	to instantly reach idle-state
 	 */
@@ -344,42 +318,38 @@ public class SpringInterpolator {
 			}
 			
 			if(skipMotion){
-				//deactivating looper -> skipping motion means FinalPosition is instantly and permanently reached
-				if(!reachedFinalPositionPermanently())
-					steadystate = true;
+				if(!reachedFinalPositionPermanently()){
+					steadyState = true;
+				}
 				
 			}else{
-				//(re-)activating looper (looper also starts for the first time from here)
-				if(reachedFinalPositionPermanently())
-					steadystate = false;
+				if(reachedFinalPositionPermanently()){
+					steadyState = false;
+				}
 			}
 		}
 	}
 
-	
-	
 	/**
 	 * The "real" duration of the simulation (using the standard values) is about 5 seconds.
 	 * Since the simulation-time is independent of the real-time (<i>you could calculate the first value today,
 	 * the second tomorrow, the third in a week, ...</i>) it can be mapped. The argument <code>duration</code>
 	 * basically determines in which time each value within a simulation-time of 5 seconds has to be computed.
 	 * <br>
-	 * <br>
-	 * <u>Note:</u> It is just an approximation. It is especially unreliable for extreme configurations,
+	 * <b>Note:</b> It is just an approximation. It is especially unreliable for extreme configurations,
 	 * e.g. d = {@value #MIN_D} (min) and k = {@value #MAX_K} (max).
 	 * 
-	 * @param duration		in milliseconds (must be between {@value #MIN_REAL_DUR} and {@value #MAX_REAL_DUR})
+	 * @param duration		in milliseconds (must be between {@value #MIN_REAL_DURATION} and {@value #MAX_REAL_DURATION})
 	 */
 	public void setApproximateDuration(float duration){
-		if(duration >= MIN_REAL_DUR && duration <= MAX_REAL_DUR)
-			REAL_DUR = duration;
+		if(duration >= MIN_REAL_DURATION && duration <= MAX_REAL_DURATION) {
+			this.duration = duration;
+		}
 	}
 	
-	
-	public float getApproximateDuration(float duration){
-		return REAL_DUR;
+	public float getApproximateDuration(){
+		return duration;
 	}
-	
 	
 	/**
 	 * Sets the stiffness (k) of a spring in the model. Here are the tendencies:
@@ -388,7 +358,6 @@ public class SpringInterpolator {
 	 * <li><b>increase</b> k: longer oscillation, higher amplitude</li>
 	 * <li><b>decrease</b> k: shorter oscillation, lower/no amplitude</li>
 	 * </ul>
-	 * 
 	 * @param k		stiffness (must be between {@value #MIN_K} and {@value #MAX_K})
 	 */
 	public void setStiffness(float k){
@@ -399,11 +368,9 @@ public class SpringInterpolator {
 		}
 	}
 	
-	
 	public float getStiffness(){
 		return sys.getK();
 	}
-	
 	
 	/**
 	 * Sets the dampening (d) of a damper in the model. Here are the tendencies:
@@ -412,7 +379,6 @@ public class SpringInterpolator {
 	 * <li><b>increase</b> d: shorter oscillation, lower/no amplitude</li>
 	 * <li><b>decrease</b> d: longer oscillation, higher amplitude</li>
 	 * </ul>
-	 * 
 	 * @param d		dampening (must be between {@value #MIN_D} and {@value #MAX_D})
 	 */
 	public void setDampening(float d){
@@ -423,11 +389,9 @@ public class SpringInterpolator {
 		}
 	}
 
-	
 	public float getDampening(){
 		return sys.getD();
 	}
-	
 	
 	
 	public class UpdateLoop implements Runnable {
