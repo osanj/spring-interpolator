@@ -82,53 +82,43 @@ import java.util.List;
  * </pre>
  * 
  * 
- * 
- * @author	Another Blogger
  * @version	1.0
- * 
  */
 public class SpringInterpolator {
 	
-	/** maximal value for the dampening */
-	public static final float MAX_D = 10f;				//limits
-	/** minimal value for the dampening */
-	public static final float MIN_D = 0.1f;
-	/** maximal value for the stiffness */
-	public static final float MAX_K = 20f;
-	/** minimal value for the stiffness */
-	public static final float MIN_K = 0.1f;
-	/** maximal value for the real-time-mapping */
-	public static final float MAX_REAL_DUR = 5000;		//in ms
-	/** minimal value for the real-time-mapping */
-	public static final float MIN_REAL_DUR = 100;
+	public static final float MAX_D = 10f;             // maximal value for the dampening
+	public static final float MIN_D = 0.1f;            // minimal value for the dampening
+	public static final float MAX_K = 20f;             // maximal value for the stiffness
+	public static final float MIN_K = 0.1f;            // minimal value for the stiffness
+	public static final float MAX_REAL_DUR = 5000;     // maximal value for the real-time-mapping (in ms)
+	public static final float MIN_REAL_DUR = 100;      // minimal value for the real-time-mapping (in ms)
 	
-	private static final float H = 0.02f;				//step-size
-	private static final float SIM_DUR = 5f;			//in s, for transforming from realtime (1000ms) to simulationtime (5s)
-	private float REAL_DUR = 1000f;						//realtime which the simulation is mapped to
-	private static final float OBS_TOL = 0.01f;			//tolerance for determining if end position is (permanently) reached
-	private static final int OBS_COUNT = (int) (2 / H);	//how many values consecutively have to be within the tolerance
+	private static final float H = 0.02f;               // step-size
+	private static final float SIM_DUR = 5f;            // in s, for transforming from realtime (1000ms) to simulationtime (5s)
+	private float REAL_DUR = 1000f;                     // realtime which the simulation is mapped to
+	private static final float OBS_TOL = 0.01f;         // tolerance for determining if end position is (permanently) reached
+	private static final int OBS_COUNT = (int) (2 / H); // how many values consecutively have to be within the tolerance
 	
-	
-	private SpringSystem sys;							//physical model
+	private SpringSystem sys;
 	private boolean steadystate;
-	private boolean[] tolerances;						//for documenting tolerances -> is used to determine final position
+	private boolean[] tolerances;
 	private int tolerancesPos;	
 	
-	private int updateRateFps;							//update-rate for the listeners (in FPS)
-	private UpdateLoop looper;							//looper updating the system (looper == null means system reached steady-state)
-	private Thread looperThread;						//thread embedding the looper
+	private int updateRateFps;
+	private UpdateLoop looper;
+	private Thread looperThread;
 	private List<OnSpringUpdateListener> listeners;
 	
 	
 	/**
-	 * Standard SpringInterpolator from startposition "bottom" with an update-rate of 60fps.
+	 * Standard SpringInterpolator from start position "bottom" with an update-rate of 60fps.
 	 */
 	public SpringInterpolator() {
 		this(60, false);
 	}
 	
 	/**
-	 * SpringInterpolator from startposition "bottom".
+	 * SpringInterpolator from start position "bottom".
 	 * 
 	 * @param updateRateFps	update-period in FramesPerSecond
 	 */
@@ -137,7 +127,7 @@ public class SpringInterpolator {
 	}
 	
 	/**
-	 * Set both startposition and update-rate.
+	 * Set both start position and update-rate.
 	 * 
 	 * @param updateRateFps		update-period in FramesPerSecond
 	 * @param currentPosition	starting position of the system
@@ -149,37 +139,36 @@ public class SpringInterpolator {
 		listeners = new ArrayList<OnSpringUpdateListener>();
 		steadystate = false;
 		
-		//initializing
 		tolerances = new boolean[OBS_COUNT];
-		resetToleranceObservation();			//initialization done with false
+		resetToleranceObservation();
 		tolerancesPos = 0;
 		
-		//starting thread with runnable that calls onUpdate all 1000/updateRateFps milliseconds
+		// starting thread with runnable that calls onUpdate all 1000/updateRateFps milliseconds
 		startLooper();
 	}
 	
 	
 	
 	private void onUpdate(long pauseMillis){
-		//physical model/setup is "moving" between 1 to 6 seconds
-		//a usual duration for an animation is 1000ms
+		// physical model/setup is "moving" between 1 to 6 seconds
+		// a usual duration for an animation is 1000ms
 		// -> mapping curve from 5s to 1000ms (standard)
 		
 		if(!steadystate){
 			
-			//pauseMillis is the time since the last computation
-			//mapping from real-time to simulation-time, e.g. 16ms (realtime) -> 0.08s (simtime for spring system)
+			// pauseMillis is the time since the last computation
+			// mapping from real-time to simulation-time, e.g. 16ms (realtime) -> 0.08s (simtime for spring system)
 			float mappedTimeStep = pauseMillis / REAL_DUR * SIM_DUR;
 			
 			
 			synchronized(sys){
-				//computing spring-system with step-size H
+				// computing spring-system with step-size H
 				while(mappedTimeStep > H){
 					updateToleranceObservation(sys.updateSystem(H));
 					mappedTimeStep -= H;
 				}
 				
-				//computing spring-system with remaining step-size
+				// computing spring-system with remaining step-size
 				updateToleranceObservation(sys.updateSystem(mappedTimeStep));
 			}
 			
@@ -188,7 +177,7 @@ public class SpringInterpolator {
 				dispatchUpdate(getCurrentInterpolatedValue());
 				
 			}else{
-				//stop updates if steady-state is reached
+				// stop updates if steady-state is reached
 				steadystate = true;
 				dispatchFinalUpdate();
 			}
@@ -197,10 +186,10 @@ public class SpringInterpolator {
 	
 	
 	private void startLooper(){
-		//starting with a clean slate
+		// starting with a clean slate
 		resetToleranceObservation();
 		
-		//setting up Looping-Architecture and starting it
+		// setting up Looping-Architecture and starting it
 		looper = new UpdateLoop(this, updateRateFps);
 		looperThread = new Thread(looper);
 		looperThread.start();
