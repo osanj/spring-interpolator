@@ -4,8 +4,8 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
 
-import de.anotherblogger.rebuilt.OnSpringUpdateListener;
-import de.anotherblogger.rebuilt.SpringInterpolator;
+import de.osanj.springinterpolator.OnSpringUpdateListener;
+import de.osanj.springinterpolator.SpringInterpolator;
 
 
 public class ExampleChart extends JPanel implements OnSpringUpdateListener{
@@ -65,7 +65,7 @@ public class ExampleChart extends JPanel implements OnSpringUpdateListener{
 			drawBackground(g);
 			
 		}else{
-			//drawing bg
+			// drawing bg
 			drawBackground(image.getGraphics());
 			
 			int y, ybu = 0, dAmount;
@@ -79,11 +79,10 @@ public class ExampleChart extends JPanel implements OnSpringUpdateListener{
 			}
 			
 			for(int i = 0; i < yValsLast; i++){
-				//y
 				y = getHeight() - (int) ((yVals[i] - from) / (to - from) * getHeight());
 				
 				if(interpolate && i > 0){
-					d = Math.sqrt(Math.pow(y - ybu, 2.0) + 1.0); //Pythagoras
+					d = Math.sqrt(Math.pow(y - ybu, 2.0) + 1.0); // pythagorean theorem
 					dAmount = (int) (d / (2 * rad + 1));
 					
 					if(dAmount > 0){
@@ -115,8 +114,8 @@ public class ExampleChart extends JPanel implements OnSpringUpdateListener{
 	}
 	
 	private void colorPoint(int x, int y, int rad, int color){
-		for(int i = -rad, lenI = rad; i < lenI; i++){	//~x
-			for(int j = -rad, lenJ = rad; j < lenJ; j++)//~y
+		for(int i = -rad, lenI = rad; i < lenI; i++){ // ~x
+			for(int j = -rad, lenJ = rad; j < lenJ; j++) // ~y
 				colorPixel(x + i, y + j, color);
 		}
 	}
